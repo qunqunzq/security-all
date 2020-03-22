@@ -2,10 +2,7 @@ package com.qun.order;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author qun
@@ -20,5 +17,11 @@ public class OrderController {
     public OrderInfo CreateOrder(@RequestBody OrderInfo info, @AuthenticationPrincipal String username){
         log.info("=========="+username);
         return info;
+    }
+
+    @GetMapping("/{id}")
+    public OrderInfo getOrder(@PathVariable Long id){
+        log.info("=========="+id);
+        return new OrderInfo();
     }
 }

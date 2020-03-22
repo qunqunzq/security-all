@@ -1,5 +1,6 @@
 package com.qun.server.resource;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -32,6 +33,9 @@ public class Oauth2ResourceServerConfig extends ResourceServerConfigurerAdapter 
     public void configure(HttpSecurity http) throws Exception {
         //这里就是说除了haha的请求 之外的都要进行token认证
        http.authorizeRequests().antMatchers("/haha").permitAll()
+               //增加权限控制
+               .antMatchers(HttpMethod.GET).access("#oauth2.hasScope('read')")
+               .antMatchers(HttpMethod.POST).access("#oauth2.hasScope('write')")
                .anyRequest().authenticated();
     }
 }
