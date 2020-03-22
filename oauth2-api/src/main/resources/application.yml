@@ -1,2 +1,10 @@
 server:
   port: 9090
+
+spring:
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://140.143.222.95:3306/security?serverTimezone=UTC&characterEncoding=utf8&useSSL=true
+      username: root
+      password: qun10086

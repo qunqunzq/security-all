@@ -2,14 +2,20 @@ package com.qun.oauth;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
+
+import javax.sql.DataSource;
 
 /**
  * 这认证服务器的配置
@@ -24,6 +30,17 @@ public class OauthConfig extends AuthorizationServerConfigurerAdapter {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private DataSource dataSource;
+
+    /**
+     *  把token放入数据库中，避免内存问题，重启，高可用等
+     */
+    @Bean
+    public TokenStore tokenStore(){
+        return new JdbcTokenStore(dataSource);
+    }
+
     /**
      * 配置用户的认证，哪些用户可以获取到token。这里就需要用到authenticationManager，
      * 它在配置WebSecurityConfigurerAdapter里配就行
@@ -32,7 +49,12 @@ public class OauthConfig extends AuthorizationServerConfigurerAdapter {
      */
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.authenticationManager(authenticationManager);
+        //tokenstore存放的地方
+        endpoints.authenticationManager(authenticationManager).tokenStore(tokenStore());
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new BCryptPasswordEncoder().encode("123456"));
     }
 
     /**
@@ -43,7 +65,7 @@ public class OauthConfig extends AuthorizationServerConfigurerAdapter {
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         //首先是从内存中取，最后改成数据库
-        clients.inMemory()
+       /* clients.inMemory()
                 //授权的应用名称，就是哪个客户端
                 .withClient("orderApp")
                 //这个客户端也需要密码认证
@@ -68,8 +90,11 @@ public class OauthConfig extends AuthorizationServerConfigurerAdapter {
                 //就是这个客户端可以访问的资源服务器
                 .resourceIds("order-server")
                 //这个客户端的认证方式
-                .authorizedGrantTypes("password");
+                .authorizedGrantTypes("password");*/
+       //从数据库读
+        clients.jdbc(dataSource);
     }
+
 
     /**
      * 客户端要来验证token 需要有什么样的规则
